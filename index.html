@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>鴨鴨神社 | 抽卡祈福</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🦆</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="page">
+
+  <header class="site-header">
+    <h1>🦆 鴨鴨神社</h1>
+    <p class="subtitle">課金抽卡前,先來丟香油錢,讓鴨鴨神保佑你歐氣爆棚</p>
+  </header>
+
+  <div class="shrine-wrap" id="shrineWrap">
+    <canvas id="scene" width="160" height="112"></canvas>
+    <div id="coinLayer" class="overlay-layer"></div>
+    <div id="sparkleLayer" class="overlay-layer"></div>
+  </div>
+
+  <div class="controls">
+    <button id="throwBtn" class="throw-btn">
+      <span class="coin-icon">🪙</span> 丟香油錢祈福
+    </button>
+    <p class="hint" id="hint">誠心誠意,點下香油錢,向鴨鴨神祈求今日抽卡好運</p>
+    <p class="counter" id="counter">今日已參拜 0 次</p>
+  </div>
+
+  <div class="fortune-panel hidden" id="fortunePanel">
+    <div class="fortune-slip" id="fortuneSlip">
+      <div class="slip-header">鴨鴨神籤</div>
+      <div class="fortune-tier" id="fortuneTier">大吉</div>
+      <div class="fortune-name" id="fortuneName"></div>
+      <div class="fortune-verse" id="fortuneVerse"></div>
+      <div class="fortune-row">
+        <span class="fortune-label">運勢</span>
+        <span class="fortune-luck" id="fortuneLuck"></span>
+      </div>
+      <div class="fortune-row">
+        <span class="fortune-label">宜</span>
+        <span id="fortuneGood"></span>
+      </div>
+      <div class="fortune-row">
+        <span class="fortune-label">忌</span>
+        <span id="fortuneBad"></span>
+      </div>
+    </div>
+    <button id="againBtn" class="again-btn">🙏 再丟一次</button>
+  </div>
+
+  <footer class="site-footer">鴨鴨神社 · 純屬娛樂,課金請理性</footer>
+
+</div>
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+# Windows / Google Drive 產生的雜檔
+Thumbs.db
+ehthumbs.db
+desktop.ini
+*.tmp
+~$*
+
+# macOS
+.DS_Store
+
+# 編輯器
+.vscode/
+.idea/
+*.swp

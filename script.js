@@ -94,7 +94,7 @@
   };
 
   const HORIZON = 80;
-  const BOX = { x: 50, y: 92, w: 60, h: 16 };
+  const BOX = { x: 48, y: 86, w: 64, h: 21 };
   const DUCK_CX = 80;
 
   /* ---------- 場景元件 ---------- */
@@ -182,6 +182,31 @@
     });
   }
 
+  // 注連繩:掛在貫下方,中央自然下垂,附四道紙垂
+  function drawShimenawa() {
+    const x0 = 48, x1 = 112, yTop = 20;
+    for (let x = x0; x <= x1; x++) {
+      const t = (x - x0) / (x1 - x0);
+      const sag = Math.round(Math.sin(Math.PI * t) * 2);
+      const h = 4 + Math.round(Math.sin(Math.PI * t));
+      rect(x, yTop + sag, 1, h, "#b09a6a");
+      rect(x, yTop + sag, 1, 1, "#d4c091");
+      rect(x, yTop + sag + h - 1, 1, 1, "#7a6740");
+    }
+    for (let x = x0 + 3; x < x1; x += 5) {          // 繩紋
+      const t = (x - x0) / (x1 - x0);
+      rect(x, yTop + Math.round(Math.sin(Math.PI * t) * 2) + 1, 1, 3, "#8d7a4e");
+    }
+    [57, 73, 89, 103].forEach(sx => {                // 紙垂
+      const t = (sx - x0) / (x1 - x0);
+      const y = yTop + Math.round(Math.sin(Math.PI * t) * 2) + 5;
+      [[0, 0], [2, 3]].forEach(([ox, oy]) => {
+        rect(sx + ox - 1, y + oy - 1, 6, 5, C.ink);
+        rect(sx + ox, y + oy, 4, 3, "#f7f2e6");
+      });
+    });
+  }
+
   // 御幣(祓禊用的幣串),鴨鴨神的神主法器。
   // 紙垂直接貼著幣串左右兩側垂下,不用橫桿 — 橫桿在這個尺寸下會讀成十字架。
   // 御幣改成立在鴨子左側的神具(側身姿勢下鴨子沒有手可以握)
@@ -266,6 +291,15 @@
 
   const DUCK_X = 62, DUCK_Y = 42;
 
+  // 表情:眼睛在 sprite 內固定佔 cols 11-13 / rows 13-16,可整塊換掉
+  const EYES = {
+    normal: ["KKK", "#KK", "KKK", "KKK"],
+    happy:  ["...", ".K.", "K.K", "..."],   // 笑成一條弧線
+    dead:   ["...", "KKK", "...", "..."]    // 死魚眼
+  };
+  const EYE_X = 11, EYE_Y = 13;
+  let duckMood = "normal";
+
   function drawSprite(rows, pal, ox, oy) {
     for (let y = 0; y < rows.length; y++) {
       const row = rows[y];
@@ -296,6 +330,12 @@
     ring(79, 36 + hy, 6.5, 1.8, 1, C.haloBright);
 
     drawSprite(DUCK, DUCK_PAL, DUCK_X, DUCK_Y + dy);
+
+    // 換表情:先用白羽蓋掉底圖的眼睛,再疊上當前表情
+    if (duckMood !== "normal") {
+      rect(DUCK_X + EYE_X, DUCK_Y + EYE_Y + dy, 3, 4, DUCK_PAL.W);
+      drawSprite(EYES[duckMood], DUCK_PAL, DUCK_X + EYE_X, DUCK_Y + EYE_Y + dy);
+    }
   }
 
   function drawLantern(cx, now, phase) {
@@ -321,14 +361,49 @@
   }
 
   function drawOfferingBox() {
-    const { x, y, w, h } = BOX;
-    rect(x - 2, y - 2, w + 4, 3, C.woodDark);
-    rect(x, y, w, h, C.wood);
-    rect(x, y, w, 2, C.woodLight);
-    for (let i = 1; i < 5; i++) rect(x + i * 9, y, 1, h, C.woodPlank);
-    rect(x + 10, y + 3, 24, 3, "#1a0f08");
-    rect(x + 11, y + 4, 22, 1, "#000000");
-    rect(x - 4, y + h, w + 8, 3, "#33220f");
+    const { x, y, w } = BOX;
+    const topH = 8, inset = 7, slats = 13;
+    const faceY = y + topH, faceH = 13;
+
+    // --- 上方格柵(投錢口):向後收窄的透視梯形。
+    //     這是賽錢箱最好認的特徵,只開一條黑縫是認不出來的 ---
+    for (let i = 0; i < topH; i++) {
+      const t = i / (topH - 1);
+      const ins = Math.round(inset * (1 - t));
+      const l = x + ins, r = x + w - ins;
+      span(y + i, l, r, "#241608");                       // 格柵縫隙的暗處
+      for (let k = 0; k <= slats; k++) {                  // 木條,由後向前散開
+        rect(Math.round(l + (r - l) * k / slats), y + i, 1, 1,
+             i === 0 ? C.woodPlank : C.woodLight);
+      }
+      rect(l - 1, y + i, 1, 1, C.woodDark);
+      rect(r, y + i, 1, 1, C.woodDark);
+    }
+    rect(x + inset - 1, y - 1, w - 2 * inset + 2, 1, C.woodDark);
+
+    // --- 正面箱體 ---
+    rect(x - 1, faceY - 1, w + 2, faceH + 2, "#33220f");
+    rect(x, faceY, w, faceH, C.wood);
+    rect(x, faceY, w, 1, C.woodLight);
+    for (let i = 1; i < 5; i++) {
+      rect(x + Math.round(i * w / 5), faceY + 1, 1, faceH - 1, C.woodPlank);
+    }
+
+    // --- 四角金具 ---
+    [[x, faceY], [x + w - 6, faceY],
+     [x, faceY + faceH - 5], [x + w - 6, faceY + faceH - 5]].forEach(([bx, by]) => {
+      rect(bx, by, 6, 5, "#2e3a30");
+      rect(bx, by, 6, 1, "#4e5c4a");
+      rect(bx + 1, by + 2, 1, 1, "#8f8f74");
+      rect(bx + 4, by + 2, 1, 1, "#8f8f74");
+    });
+
+    // 正面不放字:9x9 放不下「賽錢」的 17 劃跟 16 劃,只會變成兩團噪點。
+    // 留素木配四角金具,在像素尺度下最乾淨。
+
+    // --- 台座 ---
+    rect(x - 5, faceY + faceH + 1, w + 10, 4, "#2a1c10");
+    rect(x - 4, faceY + faceH + 2, w + 8, 2, "#4e3520");
   }
 
   function renderScene(now) {
@@ -338,6 +413,7 @@
     drawMoon();
     drawGround();
     drawTorii();
+    drawShimenawa();
     drawGohei();
     drawDuck(now);
     drawLantern(16, now, 0);
@@ -578,6 +654,11 @@
     const { tier, slip } = pickFortune();
     const el = ELEMENTS[Math.floor(Math.random() * ELEMENTS.length)];
 
+    // 鴨鴨神的表情跟著籤運走
+    duckMood = (tier.tier === "大吉" || tier.tier === "中吉") ? "happy"
+             : (tier.tier === "凶" || tier.tier === "大凶") ? "dead"
+             : "normal";
+
     fortuneTierEl.textContent = tier.tier;
     fortuneNameEl.textContent = "「" + slip.name + "」";
     fortuneTierEl.style.color =
@@ -633,6 +714,7 @@
     if (animating) return;
     animating = true;
     throwBtn.disabled = true;
+    duckMood = "normal";   // 開抽前先回復平常表情
     getAudio();
 
     const coin = makeCoinSprite();

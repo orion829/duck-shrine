@@ -21,6 +21,7 @@
   const fortuneNameEl = document.getElementById("fortuneName");
   const fortuneVerseEl = document.getElementById("fortuneVerse");
   const fortuneLuckEl = document.getElementById("fortuneLuck");
+  const fortuneElemEl = document.getElementById("fortuneElem");
   const fortuneGoodEl = document.getElementById("fortuneGood");
   const fortuneBadEl = document.getElementById("fortuneBad");
   const againBtn = document.getElementById("againBtn");
@@ -76,13 +77,12 @@
   /* ---------- 色盤 ---------- */
 
   const C = {
-    // 綠頭鴨配色 + 黑描邊(描邊是這個風格的關鍵,少了就會糊成一團色塊)
+    // 白鴨 + 黑描邊。描邊是這個風格的關鍵,少了就會糊成一團色塊;
+    // 白羽在夜景裡的對比也遠比褐色好,剪影一眼就跳出來。
     ink: "#141017",
-    green: "#4f7f3f", greenLight: "#6ba055", greenDark: "#2f5a4a",
-    collar: "#efe4cd",
-    body: "#a9836b", bodyLight: "#c9ad92", bodyPale: "#ded0b8", bodyDark: "#7a5a49",
-    speculum: "#6b5560",
-    bill: "#f0a03c", billLight: "#ffc067", billDark: "#d97b28",
+    white: "#f6f6fa", whiteLit: "#ffffff",
+    shade: "#c3c3d8", shadeDeep: "#9a9ab6",
+    bill: "#f5a03c", billLight: "#ffc067", billDark: "#d97b28",
     hat: "#2b2338", hatLight: "#4c4364",
     robe: "#f7f2e6", robeShade: "#cec4ae",
     halo: "#ffe36b", haloBright: "#fff6c4",
@@ -94,7 +94,7 @@
   };
 
   const HORIZON = 80;
-  const BOX = { x: 58, y: 86, w: 44, h: 16 };
+  const BOX = { x: 50, y: 92, w: 60, h: 16 };
   const DUCK_CX = 80;
 
   /* ---------- 場景元件 ---------- */
@@ -186,7 +186,7 @@
   // 紙垂直接貼著幣串左右兩側垂下,不用橫桿 — 橫桿在這個尺寸下會讀成十字架。
   // 御幣改成立在鴨子左側的神具(側身姿勢下鴨子沒有手可以握)
   function drawGohei() {
-    const gx = 46;
+    const gx = 112;
     rect(gx - 1, 39, 5, 43, C.ink);
     rect(gx, 40, 3, 42, C.gohei);
     rect(gx, 40, 1, 42, "#a87a45");
@@ -194,7 +194,7 @@
     rect(gx, 39, 3, 2, C.gold);
 
     // 紙垂:單道大鋸齒繞著幣串左右交錯,階距夠大才讀得出是摺紙
-    const steps = [[41, 42], [45, 46], [41, 50]];
+    const steps = [[107, 42], [111, 46], [107, 50]];
     steps.forEach(([x, y]) => rect(x - 1, y - 1, 8, 6, C.ink));
     steps.forEach(([x, y]) => {
       rect(x, y, 6, 4, C.robe);
@@ -202,8 +202,8 @@
       rect(x, y, 6, 1, "#ffffff");
     });
     // 台座
-    rect(40, 80, 15, 4, C.ink);
-    rect(41, 81, 13, 2, C.stoneDark);
+    rect(106, 80, 15, 4, C.ink);
+    rect(107, 81, 13, 2, C.stoneDark);
   }
 
   function drawDuck(now) {
@@ -212,83 +212,87 @@
 
     // 側身站姿的綠頭鴨,面向右。身體中心與頭部中心分開:
     // 剪影的辨識度全靠「橢圓身體 + 翹尾 + 細頸 + 長扁喙」這條輪廓線。
-    const bx = 76, hx = 90;
+    // 面向左的白鴨。體態拉高、頸子帶弧線,而不是矮胖蹲坐 —
+    // 參考風格的氣質全在「長頸 + 直立」這個姿態上。
+    const bx = 82, hx = 70;
 
     // 後光(對齊頭部,不是畫面中央)
-    const gl = ctx.createRadialGradient(hx, 27 + hy, 2, hx, 27 + hy, 15);
+    const gl = ctx.createRadialGradient(74, 26 + hy, 2, 74, 26 + hy, 15);
     gl.addColorStop(0, "rgba(255,227,107,0.22)");
     gl.addColorStop(1, "rgba(255,227,107,0)");
     ctx.fillStyle = gl;
-    ctx.fillRect(hx - 15, 12 + hy, 30, 30);
-    ring(hx, 27 + hy, 8, 2.8, 1, C.halo);
-    ring(hx, 27 + hy, 6.5, 1.8, 1, C.haloBright);
+    ctx.fillRect(59, 11 + hy, 30, 30);
+    ring(74, 26 + hy, 8, 2.8, 1, C.halo);
+    ring(74, 26 + hy, 6.5, 1.8, 1, C.haloBright);
 
-    // --- 尾羽:尖端朝左上,右半被身體蓋住 ---
-    for (let i = 0; i < 8; i++) {
-      const y = 60 + i + dy;
-      span(y, 56 + i * 0.8 - 1, 71, C.ink);
+    // --- 尾羽:短而尖,朝右上翹 ---
+    for (let i = 0; i < 6; i++) {
+      const y = 68 + i + dy;
+      span(y, 90, 104 - i * 1.5 + 1, C.ink);
     }
-    for (let i = 0; i < 8; i++) {
-      const y = 60 + i + dy;
-      span(y, 56 + i * 0.8, 70, C.bodyDark);
+    for (let i = 0; i < 6; i++) {
+      const y = 68 + i + dy;
+      span(y, 90, 103 - i * 1.5, C.white);
     }
 
-    // --- 腳:橘色,蹼向前(下半截被賽錢箱擋住) ---
-    [72, 80].forEach(lx => {
-      rect(lx - 1, 76 + dy, 5, 12, C.ink);
-      rect(lx, 77 + dy, 3, 11, C.bill);
+    // --- 腳:橘色長腿,下半截被賽錢箱擋住 ---
+    [76, 86].forEach(lx => {
+      rect(lx - 1, 84 + dy, 5, 13, C.ink);
+      rect(lx, 85 + dy, 3, 12, C.bill);
+      rect(lx, 85 + dy, 1, 12, C.billLight);
     });
 
+    // --- 頸:帶弧線、上細下寬。太長會變成鵝,12 列剛好 ---
+    for (let i = 0; i <= 12; i++) {
+      const t = i / 12;
+      const nx = hx + 10 * t * t;
+      const hw = 4 + t * 3.5;
+      span(53 + i + dy, nx - hw - 1, nx + hw + 1, C.ink);
+    }
+    for (let i = 0; i <= 12; i++) {
+      const t = i / 12;
+      const nx = hx + 10 * t * t;
+      const hw = 4 + t * 3.5;
+      span(53 + i + dy, nx - hw, nx + hw, C.white);
+      rect(Math.round(nx + hw) - 1, 53 + i + dy, 1, 1, C.shade);
+    }
+
     // --- 身體 ---
-    ellipse(bx, 69 + dy, 14, 10, C.ink);
-    ellipse(bx, 69 + dy, 13, 9, C.body);
-    ellipse(bx, 73 + dy, 10, 5, C.bodyLight);
-    // 胸口栗色:不描邊,才會讀成羽色而不是一顆球
-    ellipse(85, 67 + dy, 6, 5, "#7c4b3e");
+    ellipse(bx, 76 + dy, 15, 11, C.ink);
+    ellipse(bx, 76 + dy, 14, 10, C.white);
+    ellipse(bx + 3, 81 + dy, 10, 4.5, C.shade);
 
-    // --- 收攏的翅膀:淺色覆羽 + 紫色翼鏡 ---
-    ellipse(bx - 2, 67 + dy, 9, 5, C.ink);
-    ellipse(bx - 2, 67 + dy, 8, 4, C.bodyLight);
-    ellipse(bx - 4, 65 + dy, 5, 1.8, C.bodyPale);
-    rect(bx - 9, 68 + dy, 13, 1, C.speculum);
-    rect(bx - 8, 70 + dy, 11, 1, C.bodyDark);
-    rect(bx - 6, 72 + dy, 8, 1, C.bodyDark);
+    // --- 收攏的翅膀:只留下緣的弧線。閉合的橢圓描邊會像身上放了一個盤子 ---
+    ellipse(bx + 4, 74 + dy, 8.5, 5, C.shade);
+    ellipse(bx + 4, 73 + dy, 8, 4.5, C.white);
+    rect(bx - 3, 77 + dy, 14, 1, C.ink);
+    rect(bx - 1, 79 + dy, 10, 1, C.shadeDeep);
 
-    // --- 頸 ---
-    ellipse(87, 56 + dy, 5, 6, C.ink);
-    ellipse(87, 56 + dy, 4, 5, C.green);
+    // --- 頭 ---
+    ellipse(hx, 46 + dy, 8.5, 7.5, C.ink);
+    ellipse(hx, 46 + dy, 7.5, 6.5, C.white);
+    ellipse(hx + 4, 51 + dy, 3.5, 1.4, C.shade);
 
-    // --- 白色頸環:綠頭鴨最好認的特徵 ---
-    ellipse(86, 60 + dy, 6, 2.2, C.ink);
-    ellipse(86, 60 + dy, 5, 1.5, C.collar);
-
-    // --- 頭:虹彩綠 ---
-    ellipse(hx, 47 + dy, 8, 7, C.ink);
-    ellipse(hx, 47 + dy, 7, 6, C.green);
-    ellipse(hx - 2, 44 + dy, 3.5, 2, C.greenLight);
-    ellipse(hx, 52 + dy, 5, 1.8, C.greenDark);
-
-    // --- 長扁喙 ---
-    ellipse(102, 47 + dy, 6.5, 3.5, C.ink);
-    ellipse(102, 47 + dy, 6, 2.6, C.bill);
-    rect(97, 45 + dy, 10, 1, C.billLight);
-    ellipse(102, 49 + dy, 5, 1, C.billDark);
-    rect(107, 46 + dy, 2, 2, C.ink);
-    rect(99, 46 + dy, 1, 1, C.billDark);
+    // --- 扁喙:朝左 ---
+    ellipse(58, 47 + dy, 6.5, 3.5, C.ink);
+    ellipse(58, 47 + dy, 6, 2.6, C.bill);
+    rect(54, 45 + dy, 9, 1, C.billLight);
+    ellipse(58, 49 + dy, 5, 1, C.billDark);
+    rect(51, 46 + dy, 2, 2, C.ink);
+    rect(62, 46 + dy, 1, 1, C.billDark);
 
     // 眼睛
-    rect(92, 44 + dy, 3, 4, C.ink);
-    rect(92, 44 + dy, 1, 1, "#ffffff");
+    rect(65, 43 + dy, 3, 3, C.ink);
+    rect(65, 43 + dy, 1, 1, "#ffffff");
 
-    // --- 立烏帽子:窄身、戴在頭的後半,前額的綠色要留出來,
-    //     否則帽子會把整顆頭蓋掉,綠頭鴨的特徵就沒了 ---
-    [[82, 91, 39, 3], [82, 90, 36, 3], [81, 88, 33, 3], [81, 87, 30, 3]]
+    // --- 立烏帽子:窄身、戴在頭的後半(面向左,後方就是右側) ---
+    [[69, 79, 38, 3], [70, 79, 35, 3], [71, 78, 32, 3], [72, 77, 29, 3]]
       .forEach(([l, r, y, h]) => {
         rect(l - 1, y + dy, r - l + 2, h, C.ink);
         rect(l, y + dy, r - l, h, C.hat);
         rect(l, y + dy, 1, h, C.hatLight);
       });
-    rect(82, 39 + dy, 9, 1, C.hatLight);
+    rect(69, 38 + dy, 10, 1, C.hatLight);
   }
 
   function drawLantern(cx, now, phase) {
@@ -382,78 +386,205 @@
 
   /* ---------- 神籤 ---------- */
 
+  // 每個籤等有多張籤文,抽中等級後再隨機挑一張,重複參拜才不會看到同樣的內容
   const FORTUNES = [
     {
-      tier: "大吉", name: "天選騎空士", weight: 3,
-      luck: "★★★★★ 歐氣衝破天井",
-      verse: "彩虹光直接閃瞎你的眼,\n單抽就把 UP 角帶回家。\n連緋緋色金都想主動來找你,\n今天不抽對不起自己。",
-      good: "十連、追本命 UP、開限定池", bad: "猶豫、關掉遊戲"
+      tier: "大吉", weight: 3, luck: "★★★★★ 歐氣衝破天井",
+      slips: [
+        {
+          name: "天選騎空士",
+          verse: "彩虹光直接閃瞎你的眼,\n單抽就把 UP 角帶回家。\n連緋緋色金都想主動來找你,\n今天不抽對不起自己。",
+          good: "十連、追本命 UP、開限定池", bad: "猶豫、關掉遊戲"
+        },
+        {
+          name: "轉蛋精靈附體",
+          verse: "轉蛋精靈模式一路綠燈,\n連抽連中停不下來。\n榭洛看到你都想跟你進貨,\n今天你就是團裡的傳說。",
+          good: "傳說召喚、清空水晶", bad: "留手、明天再說"
+        },
+        {
+          name: "緋緋色金雙掉",
+          verse: "古戰場的箱子開到手軟,\n稀有素材像不用錢一樣掉。\n十天眾的解放條一路推到底,\n今天連小碧都替你高興。",
+          good: "刷本、開箱、解放角色", bad: "離開座位"
+        }
+      ]
     },
     {
-      tier: "中吉", name: "金光連發", weight: 10,
-      luck: "★★★★☆ 手氣正順",
-      verse: "金光閃了好幾次,\nSSR 出現的頻率高得不像話。\n雖然還沒摸到天井,\n但你已經比隔壁團長幸運多了。",
-      good: "十連、刷素材、開箱", bad: "分心、手滑點錯"
+      tier: "中吉", weight: 10, luck: "★★★★☆ 手氣正順",
+      slips: [
+        {
+          name: "金光連發",
+          verse: "金光閃了好幾次,\nSSR 出現的頻率高得不像話。\n雖然還沒摸到天井,\n但你已經比隔壁團長幸運多了。",
+          good: "十連、刷素材、開箱", bad: "分心、手滑點錯"
+        },
+        {
+          name: "歐氣蓄積中",
+          verse: "虹光雖然還沒出現,\n但金色的邊框一直在跳。\n再推一把應該就有結果,\n今天的手感值得相信。",
+          good: "再抽一輪、追加十連", bad: "見好收得太早"
+        },
+        {
+          name: "本命在望",
+          verse: "你要的角色就在名單最上面,\n機率站在你這邊。\n石頭還夠,天井也不遠,\n今天適合放膽一搏。",
+          good: "開限定池、拚 UP", bad: "臨時改抽別的池"
+        }
+      ]
     },
     {
-      tier: "小吉", name: "安穩出貨", weight: 17,
-      luck: "★★★☆☆ 穩穩過關",
-      verse: "該出的都會出,只是慢了點。\n不會爆死,但也別期待奇蹟。\n今天適合安穩地養角色,\n順便把每日任務做一做。",
-      good: "每日免費單抽、日常任務", bad: "大額課金"
+      tier: "小吉", weight: 17, luck: "★★★☆☆ 穩穩過關",
+      slips: [
+        {
+          name: "安穩出貨",
+          verse: "該出的都會出,只是慢了點。\n不會爆死,但也別期待奇蹟。\n今天適合安穩地養角色,\n順便把每日任務做一做。",
+          good: "每日免費單抽、日常任務", bad: "大額課金"
+        },
+        {
+          name: "半額之恩",
+          verse: "半額期間刷本特別順,\n素材默默地累積起來。\n沒有驚喜也沒有驚嚇,\n騎空士的小確幸就是這個。",
+          good: "半額刷本、存素材", bad: "硬闖高難本"
+        },
+        {
+          name: "榭洛的微笑",
+          verse: "商店裡剛好有你要的東西,\n碎片湊齊換到一張還不錯的卡。\n不是本命,但用起來很順手,\n今天的收穫算是及格有餘。",
+          good: "兌換商店、清碎片", bad: "眼高手低"
+        }
+      ]
     },
     {
-      tier: "吉", name: "騎空士的日常", weight: 25,
-      luck: "★★★☆☆ 普通的一天",
-      verse: "平常心就好,今天沒什麼特別的。\n金月藍月默默地累積,\n素材慢慢攢,總有畢業的一天。\n騎空士的日常就是這樣。",
-      good: "存石、刷古戰場、肝素材", bad: "梭哈全部身家"
+      tier: "吉", weight: 25, luck: "★★★☆☆ 普通的一天",
+      slips: [
+        {
+          name: "騎空士的日常",
+          verse: "平常心就好,今天沒什麼特別的。\n金月藍月默默地累積,\n素材慢慢攢,總有畢業的一天。\n騎空士的日常就是這樣。",
+          good: "存石、刷古戰場、肝素材", bad: "梭哈全部身家"
+        },
+        {
+          name: "自動戰鬥中",
+          verse: "掛著自動戰鬥就好,\n不用太專心也能過關。\n今天適合放空,\n讓隊伍自己去打。",
+          good: "Full Auto、掛機刷本", bad: "手動硬撐高難本"
+        },
+        {
+          name: "存石的美德",
+          verse: "今天不抽,明天更有力。\n水晶一顆一顆存起來,\n等下個池子開的時候,\n你會感謝現在忍住的自己。",
+          good: "存石、看攻略、排隊伍", bad: "一時衝動開池"
+        }
+      ]
     },
     {
-      tier: "半吉", name: "歪了", weight: 20,
-      luck: "★★☆☆☆ 喜憂參半",
-      verse: "有出貨,但歪了。\n你想要的沒來,\n別人的本命倒是來了三張。\n先拿去換金月吧,至少不算白花。",
-      good: "存石觀望、等下個池", bad: "不甘心再加抽"
+      tier: "半吉", weight: 20, luck: "★★☆☆☆ 喜憂參半",
+      slips: [
+        {
+          name: "歪了",
+          verse: "有出貨,但歪了。\n你想要的沒來,\n別人的本命倒是來了三張。\n先拿去換金月吧,至少不算白花。",
+          good: "存石觀望、等下個池", bad: "不甘心再加抽"
+        },
+        {
+          name: "重複的重複",
+          verse: "同一張 SSR 出現了第四次,\n上限解放是解放了,\n但你要的那張還在名單上看著你。\n心情複雜,但也不算虧。",
+          good: "上限解放、轉換素材", bad: "繼續追同一個池"
+        },
+        {
+          name: "差一步",
+          verse: "天井條看得到終點,\n石頭卻剛好不夠。\n今天就到這裡,\n剩下的留給明天的自己。",
+          good: "清任務補石、等回復", bad: "課金補最後幾抽"
+        }
+      ]
     },
     {
-      tier: "末吉", name: "勉強及格", weight: 15,
-      luck: "★★☆☆☆ 勉強及格",
-      verse: "十連開出一片藍,\n偶爾有個金光,結果還是 SR。\n天井還很遠,錢包已經在痛,\n先求平安別爆死。",
-      good: "小額娛樂、放寬心", bad: "熬夜肝本"
+      tier: "末吉", weight: 15, luck: "★★☆☆☆ 勉強及格",
+      slips: [
+        {
+          name: "勉強及格",
+          verse: "十連開出一片藍,\n偶爾有個金光,結果還是 SR。\n天井還很遠,錢包已經在痛,\n先求平安別爆死。",
+          good: "小額娛樂、放寬心", bad: "熬夜肝本"
+        },
+        {
+          name: "肝到天亮",
+          verse: "古戰場的貢獻度還差一截,\nAP 喝完了,精神也快沒了。\n今天適合認清現實,\n先睡一下再說。",
+          good: "睡覺、明天補進度", bad: "硬撐、爆肝"
+        },
+        {
+          name: "素材永遠差三個",
+          verse: "差三個碎片,永遠差三個碎片。\n掉落率跟你有仇,\n刷了二十趟還是那個數字。\n今天的耐心會被考驗。",
+          good: "換個本刷、放鬆一下", bad: "死磕同一個素材"
+        }
+      ]
     },
     {
-      tier: "凶", name: "非酋附體", weight: 8,
-      luck: "★☆☆☆☆ 非酋附體",
-      verse: "藍色、藍色、還是藍色,\n連個金光都吝嗇給你。\n螢幕上映出你空洞的表情,\n今天真的不是抽卡的日子。",
-      good: "存石、等天井、去睡覺", bad: "課金、賭一把"
+      tier: "凶", weight: 8, luck: "★☆☆☆☆ 非酋附體",
+      slips: [
+        {
+          name: "非酋附體",
+          verse: "藍色、藍色、還是藍色,\n連個金光都吝嗇給你。\n螢幕上映出你空洞的表情,\n今天真的不是抽卡的日子。",
+          good: "存石、等天井、去睡覺", bad: "課金、賭一把"
+        },
+        {
+          name: "藍月堆成山",
+          verse: "藍月倒是攢了不少,\n可惜那不是你想要的東西。\n十連的動畫你已經會背了,\n結果每次都一樣。",
+          good: "關掉遊戲、出去走走", bad: "再開一個十連"
+        },
+        {
+          name: "緋緋色金不存在",
+          verse: "刷了整整一週,\n那個素材依然沒有出現。\n你開始懷疑它是不是真的存在,\n今天的運氣站在對面。",
+          good: "改刷別的、降低期待", bad: "相信「下次就會掉」"
+        }
+      ]
     },
     {
-      tier: "大凶", name: "爆死認證", weight: 2,
-      luck: "☆☆☆☆☆ 非酋之王",
-      verse: "爆死。就是字面上的意思。\n天井花完還是沒有本命,\n金月倒是攢了不少。\n建議關掉遊戲,去外面走走。",
-      good: "早點睡、明天再戰", bad: "一切抽卡行為"
+      tier: "大凶", weight: 2, luck: "☆☆☆☆☆ 非酋之王",
+      slips: [
+        {
+          name: "爆死認證",
+          verse: "爆死。就是字面上的意思。\n天井花完還是沒有本命,\n金月倒是攢了不少。\n建議關掉遊戲,去外面走走。",
+          good: "早點睡、明天再戰", bad: "一切抽卡行為"
+        },
+        {
+          name: "天井之後還是天井",
+          verse: "你以為打到天井就結束了,\n換來的還是不對的那張。\n石頭歸零,心情歸零,\n今天請務必遠離轉蛋頁面。",
+          good: "登出、去吃點好吃的", bad: "刷卡、補課金"
+        },
+        {
+          name: "小碧都看不下去",
+          verse: "連續三十抽全藍,\n小碧在旁邊欲言又止。\n這種日子每個騎空士都遇過,\n撐過去就好。",
+          good: "找團友訴苦、休息一天", bad: "任何形式的抽卡"
+        }
+      ]
     }
+  ];
+
+  const ELEMENTS = [
+    { name: "火", note: "火屬性隊伍今天特別聽話" },
+    { name: "水", note: "水屬性的減傷讓你穩如泰山" },
+    { name: "土", note: "土屬性硬是扛住了那一擊" },
+    { name: "風", note: "風屬性的連擊今天很給面子" },
+    { name: "光", note: "光屬性的回復撐你到最後" },
+    { name: "闇", note: "闇屬性的爆發今天很有戲" }
   ];
 
   function pickFortune() {
     const total = FORTUNES.reduce((s, f) => s + f.weight, 0);
     let r = Math.random() * total;
+    let tier = FORTUNES[FORTUNES.length - 1];
     for (const f of FORTUNES) {
-      if (r < f.weight) return f;
+      if (r < f.weight) { tier = f; break; }
       r -= f.weight;
     }
-    return FORTUNES[FORTUNES.length - 1];
+    const slip = tier.slips[Math.floor(Math.random() * tier.slips.length)];
+    return { tier, slip };
   }
 
   function showFortune() {
-    const f = pickFortune();
-    fortuneTierEl.textContent = f.tier;
-    fortuneNameEl.textContent = "「" + f.name + "」";
+    const { tier, slip } = pickFortune();
+    const el = ELEMENTS[Math.floor(Math.random() * ELEMENTS.length)];
+
+    fortuneTierEl.textContent = tier.tier;
+    fortuneNameEl.textContent = "「" + slip.name + "」";
     fortuneTierEl.style.color =
-      f.weight <= 3 ? "#b5892f" :
-      (f.tier === "凶" || f.tier === "大凶") ? "#5a3f85" : "#8a2f26";
-    fortuneVerseEl.textContent = f.verse;
-    fortuneLuckEl.textContent = f.luck;
-    fortuneGoodEl.textContent = f.good;
-    fortuneBadEl.textContent = f.bad;
+      tier.weight <= 3 ? "#b5892f" :
+      (tier.tier === "凶" || tier.tier === "大凶") ? "#5a3f85" : "#8a2f26";
+    fortuneVerseEl.textContent = slip.verse;
+    fortuneLuckEl.textContent = tier.luck;
+    fortuneElemEl.textContent = el.name + " — " + el.note;
+    fortuneGoodEl.textContent = slip.good;
+    fortuneBadEl.textContent = slip.bad;
     fortunePanel.classList.remove("hidden");
     fortunePanel.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }

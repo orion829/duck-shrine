@@ -206,93 +206,96 @@
     rect(107, 81, 13, 2, C.stoneDark);
   }
 
+  /* ---------- 鴨鴨神本體 ----------
+     逐格手繪的點陣圖,不是用橢圓疊出來的。低解析度下演算法產生的橢圓
+     邊緣會有不規則鋸齒,描邊粗細也隨曲率忽粗忽細 —— 那是先前幾版
+     看起來「不像像素畫」的根本原因。手繪才控制得住每一個像素。
+     K=描邊 W=白羽 w=陰影 O=橘 o=暗橘 H=烏帽子 h=帽面反光 #=眼神光 */
+  const DUCK_PAL = {
+    K: "#17131c", W: "#f7f7fb", w: "#ccccdf",
+    O: "#f6a23e", o: "#d4791f", g: "#a8a8c4",
+    H: "#2a2338", h: "#4a4260", "#": "#ffffff"
+  };
+
+  const DUCK = [
+    "...............KKKKKK.............",
+    "..............KHHHHHHK............",
+    "..............KhHHHHHK............",
+    ".............KhHHHHHHK............",
+    ".............KhHHHHHHK............",
+    "............KhHHHHHHHK............",
+    "............KhHHHHHHHK............",
+    "...........KhHHHHHHHHHK...........",
+    "..........KhHHHHHHHHHHHK..........",
+    "..........KKKKKKKKKKKKKK..........",
+    "...........KWWWWWWWWWWK...........",
+    ".........KWWWWWWWWWWWWWWK.........",
+    "........KWWWWWWWWWWWWWWWWK........",
+    ".......KWWWKKKWWWWWWWWWWWWK.......",
+    ".......KWWW#KKWWWWWWWWWWWWK.......",
+    ".......KWWWKKKWWWWWWWWWWWWK.......",
+    ".......KWWWKKKWWWWWWWWWWWWK.......",
+    "...KKKKKKWWWWWWWWWWWWWWWWWK.......",
+    "..KOOOOOOOWWWWWWWWWWWWWWWWK.......",
+    ".KOOOOOOOOWWWWWWWWWWWWWWWWK.......",
+    ".KooooooooWWWWWWWWWWWWWWWWK.......",
+    "..KKKKKKKKWWWWWWWWWWWWWWWK........",
+    "........KWWWWWWWWWWWWwwwwK........",
+    ".........KWWWWWWWWWWwwwwK.........",
+    "..........KWWWWWWWWwwwwK..........",
+    "...........KWWWWWWWWwwK...........",
+    "............KWWWWWWWwwK...........",
+    "..........KWWWWWWWWWWWWwwK........",
+    ".......KWWWWWWWWWWWWWWWWWwwwwK....",
+    ".....KWWWWWWWWWWWWWWWWWWWwwwwwwK..",
+    "....KWWWWWWWWWWWWWWWWWWWwwwwwwwwK.",
+    "....KWWWWWWWWWWWWWWWWWWwwwwwwwwwwK",
+    "....KWWWWWWWWWWWWWWWWWwwwwwwwwwwK.",
+    "....KWWWWWWWWWWWWWWWgggggggggwwwK.",
+    ".....KWWWWWWWWWWWWWggwwwwwwwwwwK..",
+    "......KWWWWWWWWWWWwwwwwwwwwwwwK...",
+    "........KWWWWWWWWwwwwwwwwwwwK.....",
+    "...........KwwwwwwwwwwwwwK........",
+    "...........KKKKKKKKKKKKKKK........",
+    ".............KOOK...KOOK..........",
+    ".............KOOK...KOOK..........",
+    ".............KOOK...KOOK..........",
+    "..........KOOOOOK.KOOOOOK.........",
+    "..........KKKKKKK.KKKKKKK.........",
+  ];
+
+  const DUCK_X = 62, DUCK_Y = 42;
+
+  function drawSprite(rows, pal, ox, oy) {
+    for (let y = 0; y < rows.length; y++) {
+      const row = rows[y];
+      let x = 0;
+      while (x < row.length) {
+        const ch = row[x];
+        if (ch === ".") { x++; continue; }
+        let run = 1;
+        while (x + run < row.length && row[x + run] === ch) run++;
+        ctx.fillStyle = pal[ch];
+        ctx.fillRect(ox + x, oy + y, run, 1);
+        x += run;
+      }
+    }
+  }
+
   function drawDuck(now) {
     const dy = Math.round(Math.sin(now / 900) * 1.2);          // 呼吸浮動
-    const hy = dy + Math.round(Math.sin(now / 1300) * 0.6);    // 光環稍微錯開
+    const hy = dy + Math.round(Math.sin(now / 1300) * 0.6);    // 後光稍微錯開
 
-    // 側身站姿的綠頭鴨,面向右。身體中心與頭部中心分開:
-    // 剪影的辨識度全靠「橢圓身體 + 翹尾 + 細頸 + 長扁喙」這條輪廓線。
-    // 面向左的白鴨。體態拉高、頸子帶弧線,而不是矮胖蹲坐 —
-    // 參考風格的氣質全在「長頸 + 直立」這個姿態上。
-    const bx = 82, hx = 70;
-
-    // 後光(對齊頭部,不是畫面中央)
-    const gl = ctx.createRadialGradient(74, 26 + hy, 2, 74, 26 + hy, 15);
-    gl.addColorStop(0, "rgba(255,227,107,0.22)");
+    // 後光:對齊烏帽子正上方
+    const gl = ctx.createRadialGradient(79, 36 + hy, 2, 79, 36 + hy, 14);
+    gl.addColorStop(0, "rgba(255,227,107,0.24)");
     gl.addColorStop(1, "rgba(255,227,107,0)");
     ctx.fillStyle = gl;
-    ctx.fillRect(59, 11 + hy, 30, 30);
-    ring(74, 26 + hy, 8, 2.8, 1, C.halo);
-    ring(74, 26 + hy, 6.5, 1.8, 1, C.haloBright);
+    ctx.fillRect(65, 22 + hy, 28, 28);
+    ring(79, 36 + hy, 8, 2.8, 1, C.halo);
+    ring(79, 36 + hy, 6.5, 1.8, 1, C.haloBright);
 
-    // --- 尾羽:短而尖,朝右上翹 ---
-    for (let i = 0; i < 6; i++) {
-      const y = 68 + i + dy;
-      span(y, 90, 104 - i * 1.5 + 1, C.ink);
-    }
-    for (let i = 0; i < 6; i++) {
-      const y = 68 + i + dy;
-      span(y, 90, 103 - i * 1.5, C.white);
-    }
-
-    // --- 腳:橘色長腿,下半截被賽錢箱擋住 ---
-    [76, 86].forEach(lx => {
-      rect(lx - 1, 84 + dy, 5, 13, C.ink);
-      rect(lx, 85 + dy, 3, 12, C.bill);
-      rect(lx, 85 + dy, 1, 12, C.billLight);
-    });
-
-    // --- 頸:帶弧線、上細下寬。太長會變成鵝,12 列剛好 ---
-    for (let i = 0; i <= 12; i++) {
-      const t = i / 12;
-      const nx = hx + 10 * t * t;
-      const hw = 4 + t * 3.5;
-      span(53 + i + dy, nx - hw - 1, nx + hw + 1, C.ink);
-    }
-    for (let i = 0; i <= 12; i++) {
-      const t = i / 12;
-      const nx = hx + 10 * t * t;
-      const hw = 4 + t * 3.5;
-      span(53 + i + dy, nx - hw, nx + hw, C.white);
-      rect(Math.round(nx + hw) - 1, 53 + i + dy, 1, 1, C.shade);
-    }
-
-    // --- 身體 ---
-    ellipse(bx, 76 + dy, 15, 11, C.ink);
-    ellipse(bx, 76 + dy, 14, 10, C.white);
-    ellipse(bx + 3, 81 + dy, 10, 4.5, C.shade);
-
-    // --- 收攏的翅膀:只留下緣的弧線。閉合的橢圓描邊會像身上放了一個盤子 ---
-    ellipse(bx + 4, 74 + dy, 8.5, 5, C.shade);
-    ellipse(bx + 4, 73 + dy, 8, 4.5, C.white);
-    rect(bx - 3, 77 + dy, 14, 1, C.ink);
-    rect(bx - 1, 79 + dy, 10, 1, C.shadeDeep);
-
-    // --- 頭 ---
-    ellipse(hx, 46 + dy, 8.5, 7.5, C.ink);
-    ellipse(hx, 46 + dy, 7.5, 6.5, C.white);
-    ellipse(hx + 4, 51 + dy, 3.5, 1.4, C.shade);
-
-    // --- 扁喙:朝左 ---
-    ellipse(58, 47 + dy, 6.5, 3.5, C.ink);
-    ellipse(58, 47 + dy, 6, 2.6, C.bill);
-    rect(54, 45 + dy, 9, 1, C.billLight);
-    ellipse(58, 49 + dy, 5, 1, C.billDark);
-    rect(51, 46 + dy, 2, 2, C.ink);
-    rect(62, 46 + dy, 1, 1, C.billDark);
-
-    // 眼睛
-    rect(65, 43 + dy, 3, 3, C.ink);
-    rect(65, 43 + dy, 1, 1, "#ffffff");
-
-    // --- 立烏帽子:窄身、戴在頭的後半(面向左,後方就是右側) ---
-    [[69, 79, 38, 3], [70, 79, 35, 3], [71, 78, 32, 3], [72, 77, 29, 3]]
-      .forEach(([l, r, y, h]) => {
-        rect(l - 1, y + dy, r - l + 2, h, C.ink);
-        rect(l, y + dy, r - l, h, C.hat);
-        rect(l, y + dy, 1, h, C.hatLight);
-      });
-    rect(69, 38 + dy, 10, 1, C.hatLight);
+    drawSprite(DUCK, DUCK_PAL, DUCK_X, DUCK_Y + dy);
   }
 
   function drawLantern(cx, now, phase) {
